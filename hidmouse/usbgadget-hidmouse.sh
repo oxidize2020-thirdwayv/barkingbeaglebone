@@ -2,7 +2,7 @@
 
 modprobe libcomposite
 
-pushd /sys/kernel/config/usb_gadget
+pushd /sys/kernel/config/usb_gadget  # Put ourselves in the kernel configfs space
 
 mkdir -p thirdwayv_hidmouse
 cd thirdwayv_hidmouse
@@ -26,7 +26,7 @@ echo 500 > configs/c.1/MaxPower  # Request 500 mA
 
 # Careful ... stuff after this line actually calls into the kernel module
 
-mkdir -p functions/hid.usb0		   # Calls *_alloc_inst in the kernel module--we can now set functions specific to the class
+mkdir -p functions/hid.usb0		   # Calls *_alloc_inst in the kernel module--we do specific to the class stuff
 echo 2 > functions/hid.usb0/protocol	   # Mouse--specified by USB
 echo 1 > functions/hid.usb0/subclass	   # Boot Interface--specified by USB
 echo 8 > functions/hid.usb0/report_length  # wMaxPacketSize--set to 8 to enable usage by old low-speed devices
@@ -72,5 +72,7 @@ ls /sys/class/udc > UDC  # calls *_bind in the kernel module
 # /dev/hidg0 should now exist
 
 # Connecting the USB cable actually calls *_set_alt in the kernel module
+
+# At this point--device is being polled--but responding with NACK since we're not connected to /dev/hidg0
 
 popd
