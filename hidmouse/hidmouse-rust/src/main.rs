@@ -10,11 +10,10 @@ macro_rules! syscall {
     }};
 }
 
-use log::{debug, error, info, warn};
+use log::{info, warn};
 
 use std::time::Instant;
 
-use std::fs::File;
 use std::fs::OpenOptions;
 
 use std::io::{self, Read, Write};
@@ -75,10 +74,8 @@ fn main() -> io::Result<()> {
 
                 let bb_report =
                     if (current_time_millis / 1000) % 2 == 0 {
-                        info!("Even");
                         b"\x00\xF0\xF0"
                     } else {
-                        info!("Odd");
                         b"\x00\x0F\x10"
                     };
 
