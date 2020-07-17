@@ -16,7 +16,8 @@ use std::time::Instant;
 
 use std::fs::OpenOptions;
 
-use std::io::{self, Read, Write};
+//use std::io::{self, Read, Write};
+use std::io::{self, Write};
 
 use std::os::unix::io::AsRawFd;
 
@@ -52,14 +53,14 @@ fn main() -> io::Result<()> {
     // Need timing information
     let time_origin = Instant::now();
 
-
     const MAX_EPOLL_EVENTS: i32 = 1; // Don't be clever
     const EPOLL_TIMEOUT_MILLIS: i32 = 1000;
 
     let mut ff_can_write = false;
-    let mut ff_can_read = false;
+    //let mut ff_can_read = false;
     loop {
-        let mut epoll_return_event_struct = libc::epoll_event { events: 0, u64: 0 }; // Empty
+        let mut epoll_return_event_struct =
+            libc::epoll_event { events: 0, u64: 0 }; // Empty
 
         let num_epoll_events_available = syscall!(epoll_wait(
             fd_epoll,
@@ -70,13 +71,14 @@ fn main() -> io::Result<()> {
 
         if num_epoll_events_available == 0 {  // Timeout
             if ff_can_write {
-                let current_time_millis = Instant::now().duration_since(time_origin).as_millis();
+                let current_time_millis =
+                    Instant::now().duration_since(time_origin).as_millis();
 
                 let bb_report =
                     if (current_time_millis / 1000) % 2 == 0 {
                         b"\x00\xF0\xF0"
                     } else {
-                        b"\x00\x0F\x10"
+                        b"\x00\x10\x10"
                     };
 
                 match file_usbgadget.write(bb_report) {
@@ -102,7 +104,7 @@ fn main() -> io::Result<()> {
                     }
                 }
             } else {
-                // All we can do is wait ...
+                // Can't write ... likely unplugged ... All we can do is wait ...
             }
         } else {
             assert!(
@@ -125,7 +127,7 @@ fn main() -> io::Result<()> {
                     (&mut epoll_events_to_watch) as *mut libc::epoll_event))?;
             }
             if (epoll_return_event_struct.events & (libc::EPOLLIN as u32)) != 0 {
-                ff_can_read = true;
+                //ff_can_read = true;
                 warn!("Oops.  Something attempted to send to us");
             }
         }
